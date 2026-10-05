@@ -18,6 +18,8 @@ function closeMenu() {
   menu.setAttribute('aria-expanded', 'false');
   nav.classList.remove('is-open');
   menu.querySelector('span').textContent = '+';
+  const header = nav.closest?.('.site-header');
+  if (header) document.documentElement.style.setProperty('--header-offset', (header.getBoundingClientRect().height + 24) + 'px');
 }
 menu.addEventListener('click', () => {
   const open = menu.getAttribute('aria-expanded') !== 'true';
@@ -130,21 +132,43 @@ select('#download-message').addEventListener('click', () => {
 // Prevent submission until the local-only composer is ready.
 select('#contact-submit').disabled = false;
 
-if ('IntersectionObserver' in window) {
-  const navObserver = new IntersectionObserver(entries => {
-    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-    if (!visible.length) return;
-    const id = visible[0].target.id;
-    selectAll('#main-nav a').forEach(link => {
-      const active = link.getAttribute('href') === `#${id}`;
-      link.classList.toggle('active', active);
-      if (active) link.setAttribute('aria-current', 'location');
-      else link.removeAttribute('aria-current');
-    });
-    updateNavIndicator();
-  }, { rootMargin: '-10% 0px -55% 0px', threshold: [0, 0.15, 0.4] });
-  selectAll('main > section').forEach(section => navObserver.observe(section));
+// Match the section crossing the actual anchor offset, rather than comparing
+// intersection ratios (which favors the preceding, shorter section).
+function setActiveSection(id) {
+  selectAll('#main-nav a').forEach(link => {
+    const active = link.getAttribute('href') === '#' + id;
+    link.classList.toggle('active', active);
+    if (active) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+  updateNavIndicator();
+}
+const navSections = selectAll('main > section');
+let navFramePending = false;
+function trackActiveSection() {
+  navFramePending = false;
+  const root = document.documentElement;
+  const offset = parseFloat(window.getComputedStyle(root).scrollPaddingTop) || 0;
+  let active = navSections[0];
+  navSections.forEach(section => {
+    if (section.getBoundingClientRect().top <= offset + 2) active = section;
+  });
+  if (window.scrollY > 0 && Math.ceil(window.scrollY + root.clientHeight) >= root.scrollHeight - 2) active = navSections.at(-1);
+  if (active) setActiveSection(active.id);
+}
+function queueNavTracking() {
+  if (navFramePending) return;
+  navFramePending = true;
+  window.requestAnimationFrame(trackActiveSection);
+}
+window.addEventListener('scroll', queueNavTracking, { passive:true });
+window.addEventListener('resize', queueNavTracking);
+window.addEventListener('hashchange', queueNavTracking);
+window.addEventListener('load', queueNavTracking);
+if ('ResizeObserver' in window) new ResizeObserver(queueNavTracking).observe(document.body);
+queueNavTracking();
 
+if ('IntersectionObserver' in window) {
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (!motion.matches) {
     const revealObserver = new IntersectionObserver(entries => {

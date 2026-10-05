@@ -65,6 +65,20 @@ try {
   await send('Page.navigate', { url: base });
   for (let i = 0; i < 40; i++) { if (await evaluate('document.readyState === "complete" && document.documentElement.classList.contains("js")')) break; await delay(100); }
   const report = { layouts: [], keyboard: {}, menu: {}, form: {}, reducedMotion: {}, consoleErrors: errors };
+  report.navHighlight = [];
+  for (const width of [1440,375]) {
+    await send('Emulation.setDeviceMetricsOverride', { width, height:900, deviceScaleFactor:1, mobile:false });
+    for (const id of ['home','about','experience','projects','contact']) {
+      if (width <= 900) await evaluate('if (document.querySelector(".menu-toggle").getAttribute("aria-expanded") !== "true") document.querySelector(".menu-toggle").click()');
+      await evaluate(`[...document.querySelectorAll("#main-nav a")].find(a => a.hash === ${JSON.stringify("#" + id)}).click()`);
+      await delay(1000);
+      report.navHighlight.push(await evaluate('({width:innerWidth, target:' + JSON.stringify(id) + ', active:document.querySelector("#main-nav a[aria-current]").getAttribute("href")})'));
+    }
+    await evaluate('window.scrollTo({top:document.querySelector("#experience").offsetTop + 250,behavior:"instant"})');
+    await delay(100);
+    report.navHighlight.push(await evaluate('({width:innerWidth,target:"experience",active:document.querySelector("#main-nav a[aria-current]").getAttribute("href")})'));
+  }
+  await evaluate('window.scrollTo({top:0,behavior:"instant"})');
   for (const width of [320, 375, 768, 1440]) {
     await send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false });
     for (const fontSize of [16, 32]) {
@@ -203,7 +217,9 @@ try {
   await delay(500);
   report.withoutJavaScript = await evaluate('({ readable: document.querySelector("h1").textContent.includes("Adoration") && document.querySelector("#about").textContent.includes("Computer Science"), navigationVisible: getComputedStyle(document.querySelector("#main-nav")).display !== "none", disclosureAvailable: !!document.querySelector("details summary"), flourishVisible: parseFloat(getComputedStyle(document.querySelector(".name-flourish path")).strokeDashoffset) === 0 })');
   console.log(JSON.stringify(report, null, 2));
+  console.log('Navigation regression: ' + JSON.stringify(report.navHighlight));
   console.log(`Screenshot: ${join(profile, 'mobile.png')}`);
+  assert.ok(report.navHighlight.every(result => result.active === '#' + result.target), 'Clicked and manually scrolled sections must match the highlight');
   assert.ok(report.layouts.every(l => !l.horizontalOverflow && !l.navigationOverlap && !l.crampedSocialLinks.length && !l.controlsOverlap && !l.galleryOverlap && l.iconOnlySocials && !l.footerOverlap && (!l.openMenu || (!l.openMenu.horizontalOverflow && l.openMenu.linksVisible))));
   assert.ok(Object.values(report.menu).every(Boolean));
   assert.ok(report.keyboard.disclosureEnter && report.keyboard.disclosureSpace && report.keyboard.focusStyles.every(f => f.focusable && f.visibleOutline));

@@ -59,7 +59,7 @@ function mockBrowser({ reduced = false, observers = true } = {}) {
   const links = ['home', 'about', 'experience', 'projects', 'contact'].map(id => {
     const link = element(); link.setAttribute('href', '#' + id); return link;
   });
-  const sections = links.map(link => ({ id: link.getAttribute('href').slice(1) }));
+  const sections = links.map((link, index) => ({ id: link.getAttribute('href').slice(1), top: index * 1000, getBoundingClientRect() { return { top: this.top }; } }));
   const reveal = [element(), element()];
   const document = Object.assign(element(), {
     documentElement: element(), body: element(),
@@ -69,6 +69,10 @@ function mockBrowser({ reduced = false, observers = true } = {}) {
     createRange: () => ({ selectNodeContents() { selected = true; } })
   });
   const window = {
+    addEventListener() {},
+    requestAnimationFrame(callback) { callback(); },
+    getComputedStyle() { return { scrollPaddingTop:'120px' }; },
+    scrollY:0,
     matchMedia(query) {
       if (!media.has(query)) media.set(query, Object.assign(element(), { matches: query.includes('reduced-motion') && reduced }));
       return media.get(query);
@@ -140,14 +144,12 @@ await form.fire('submit', { preventDefault() {} });
 assert.ok(get('#message-result').hidden);
 assert.ok(get('#contact-status').textContent.includes('Please add'));
 
-assert.equal(browser.observerList.length, 2);
-browser.observerList[0].callback([{ isIntersecting: true, intersectionRatio: .5, target: { id: 'experience' } }]);
-assert.equal(browser.links[2].getAttribute('aria-current'), 'location');
-browser.observerList[1].callback([{ isIntersecting: true, target: browser.reveal[0] }]);
+assert.equal(browser.observerList.length, 1);
+browser.observerList[0].callback([{ isIntersecting: true, target: browser.reveal[0] }]);
 assert.ok(browser.reveal[0].classList.contains('is-revealed'));
 await browser.media.get('(prefers-reduced-motion: reduce)').fire('change', { matches: true });
-assert.equal(browser.observerList[1].targets.size, 0);
-assert.equal(mockBrowser({ reduced: true }).observerList.length, 1);
+assert.equal(browser.observerList[0].targets.size, 0);
+assert.equal(mockBrowser({ reduced: true }).observerList.length, 0);
 assert.equal(mockBrowser({ observers: false }).observerList.length, 0);
 
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
