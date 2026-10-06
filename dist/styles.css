@@ -425,15 +425,26 @@ h1 > em {
   border-color:var(--wine);
 }
 
+.core-skills-title {
+  margin:32px 0 0;
+  font-family:var(--mono);
+  font-size:.75rem;
+  font-weight:400;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
 .skills-list {
   display:flex;
   flex-wrap:wrap;
   gap:22px 34px;
-  margin:32px 0 0;
+  margin:16px 0 0;
 }
 
 .skills-list > div {
-  flex:1 1 170px;
+  flex:1 1 250px;
+  min-width:0;
 }
 
 .skills-list dt {
