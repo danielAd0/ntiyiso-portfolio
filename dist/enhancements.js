@@ -191,6 +191,11 @@ document.querySelectorAll('.project-card').forEach(card => {
     content.inert = !expanded;
     queueProgress();
   }
+  // A deep link takes precedence over an in-flight closing animation.
+  card.addEventListener('project-link-open', () => {
+    expanded = true;
+    settle();
+  });
   summary.addEventListener('click', event => {
     if (motion.matches || typeof content.animate !== 'function') return;
     event.preventDefault();
@@ -209,3 +214,78 @@ document.querySelectorAll('.project-card').forEach(card => {
   card.addEventListener('toggle', () => { if (!animation) { expanded = card.open; content.inert = !expanded; } });
   motion.addEventListener('change', () => { if (motion.matches && animation) settle(); });
 });
+
+// Keep shared URLs on the current origin/path/query, changing only the fragment.
+document.querySelectorAll('.project-card[id]').forEach(card => {
+  const controls = document.createElement('div');
+  controls.className = 'project-link-controls mt-5 grid min-w-0 gap-2';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'project-link-button w-fit rounded-full border border-divider bg-transparent px-4 py-2 text-sm text-accent hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent disabled:opacity-50 disabled:cursor-default motion-safe:transition-colors motion-safe:duration-200';
+  button.textContent = 'Copy project link';
+  button.setAttribute('aria-label', `Copy project link: ${card.querySelector('h3').textContent}`);
+  const feedback = document.createElement('p');
+  feedback.className = 'text-sm text-muted';
+  feedback.setAttribute('role', 'status');
+  feedback.setAttribute('aria-live', 'polite');
+  const fallback = document.createElement('div');
+  fallback.hidden = true;
+  const label = document.createElement('label');
+  label.className = 'block text-sm text-muted';
+  label.textContent = 'Project link — select and copy';
+  const field = document.createElement('input');
+  field.id = `${card.id}-link`;
+  field.type = 'text';
+  field.readOnly = true;
+  field.className = 'block w-full min-w-0 rounded border border-divider bg-page p-2 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent';
+  label.htmlFor = field.id;
+  field.addEventListener('focus', () => field.select());
+  fallback.append(label, field);
+  controls.append(button, feedback, fallback);
+  card.querySelector('.project-content').append(controls);
+  button.addEventListener('click', async () => {
+    const url = new URL(window.location.href);
+    url.hash = card.id;
+    field.value = url.href;
+    fallback.hidden = true;
+    button.disabled = true;
+    feedback.textContent = 'Copying project link…';
+    try {
+      await navigator.clipboard.writeText(url.href);
+      feedback.textContent = 'Project link copied to clipboard.';
+    } catch {
+      fallback.hidden = false;
+      feedback.textContent = 'Could not copy automatically. Copy the link from the field below.';
+      // Do not steal focus from another control while awaiting clipboard access.
+      if (card.open && document.activeElement === button) {
+        field.focus({ preventScroll: true });
+        field.select();
+      }
+    } finally {
+      button.disabled = false;
+    }
+  });
+});
+
+let projectLinkFrame;
+function followProjectLink() {
+  cancelAnimationFrame(projectLinkFrame);
+  // Wait for native fragment/history scrolling and header layout to settle.
+  projectLinkFrame = requestAnimationFrame(() => {
+    projectLinkFrame = requestAnimationFrame(() => {
+      let id;
+      try { id = decodeURIComponent(window.location.hash.slice(1)); } catch { return; }
+      const card = document.getElementById(id);
+      if (!card?.matches('.project-card')) return;
+      const menu = document.querySelector('.menu-toggle');
+      if (menu.getAttribute('aria-expanded') === 'true') menu.click();
+      card.dispatchEvent(new Event('project-link-open'));
+      updateHeaderOffset();
+      card.querySelector('summary').scrollIntoView({ block: 'start', behavior: 'instant' });
+    });
+  });
+}
+window.addEventListener('hashchange', followProjectLink);
+window.addEventListener('popstate', followProjectLink);
+window.addEventListener('load', followProjectLink);
+followProjectLink();

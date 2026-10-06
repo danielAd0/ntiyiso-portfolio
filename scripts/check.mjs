@@ -10,8 +10,8 @@ const tailwindInput = await readFile(new URL('../src/tailwind.css', import.meta.
 assert.ok(html.includes('href="/tailwind.css"'), 'Generated utilities must be linked');
 assert.ok(!tailwindInput.includes('@import "tailwindcss";') && !tailwindInput.includes('preflight.css'), 'Preflight must remain disabled');
 for (const file of ['index.html', 'app.js', 'enhancements.js']) assert.ok(tailwindInput.includes(`@source "../dist/${file}"`));
-assert.ok(utilities.includes('background-color:var(--page-bg)') && utilities.includes('color:var(--ink)'), 'Theme utilities must reference the live palette');
-assert.ok(utilities.includes('prefers-reduced-motion:no-preference'), 'Motion utilities must respect reduced motion');
+assert.ok(/background-color:\s*var\(--page-bg\)/.test(utilities) && /color:\s*var\(--ink\)/.test(utilities), 'Theme utilities must reference the live palette');
+assert.ok(/prefers-reduced-motion:\s*no-preference/.test(utilities), 'Motion utilities must respect reduced motion');
 const app = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 assert.equal(new Set(ids).size, ids.length, 'HTML IDs must be unique');

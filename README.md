@@ -67,4 +67,7 @@ Projects remain Coming soon. Three supplied Mafori FC screenshots are bundled wi
 
 ## Layout polish
 
+Project disclosures have stable direct links: `#mafori-fc`, `#project-two`, and `#project-three`. Opening a link expands that project and aligns its summary below the sticky header, including initial loads and browser Back/Forward. Each expanded project has a Copy project link control that preserves the current page path and query string; clipboard failure reveals a selectable read-only URL. All unfinished projects remain Coming soon.
+
+
 The theme icon sits on the right; regular navigation remains available. Social links use icons with accessible names. The original burgundy footer keeps the name, copyright year and existing scroll-progress control. Header height updates the anchor offset so section headings remain visible. Gallery captions and enlargement controls flow normally at large text sizes.

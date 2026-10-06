@@ -212,6 +212,46 @@ try {
   await evaluate('document.querySelector(".menu-toggle").setAttribute("aria-expanded", "false"); document.querySelector("#main-nav").classList.remove("is-open"); window.scrollTo(0,0); document.activeElement.blur()');
   const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
   await writeFile(join(profile, 'mobile.png'), Buffer.from(shot.data, 'base64'));
+  await send('Page.navigate', { url: base + '/?share=1#mafori-fc' });
+  await delay(800);
+  const linkedProjectVisible = id => evaluate(`(() => {
+    const card = document.getElementById('${id}');
+    const top = card.querySelector('summary').getBoundingClientRect().top;
+    const headerBottom = document.querySelector('.site-header').getBoundingClientRect().bottom;
+    return card.open && !card.querySelector('.project-content').inert && top >= headerBottom && top < innerHeight && document.querySelector('#main-nav a[aria-current]').hash === '#projects';
+  })()`);
+  assert.ok(await linkedProjectVisible('mafori-fc'), 'Initial deep link must open the project below the header');
+  for (const preference of ['no-preference', 'reduce']) {
+    await send('Emulation.setEmulatedMedia', { features:[{name:'prefers-reduced-motion',value:preference}] });
+    for (const id of ['project-two', 'project-three', 'mafori-fc']) {
+      await evaluate(`document.getElementById('${id}').open = false; location.hash = '${id}'`);
+      await delay(350);
+      assert.ok(await linkedProjectVisible(id), 'Hash changes must expand the requested disclosure');
+    }
+  }
+  await evaluate('location.hash = "project-two"'); await delay(250);
+  await evaluate('location.hash = "project-three"'); await delay(250);
+  await evaluate('document.querySelector("#project-two").open = false; history.back()'); await delay(350);
+  assert.ok(await linkedProjectVisible('project-two'), 'Back must reopen the previous project');
+  await evaluate('document.querySelector("#project-three").open = false; history.forward()'); await delay(350);
+  assert.ok(await linkedProjectVisible('project-three'), 'Forward must reopen the next project');
+  await evaluate(`window.linkClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text => { window.projectCopied = text; }}});`);
+  for (const id of ['mafori-fc', 'project-two', 'project-three']) {
+    await evaluate(`document.querySelector('#${id} .project-link-button').click()`);
+    await delay(100);
+    assert.ok(await evaluate(`window.projectCopied === new URL('/?share=1#${id}', location.origin).href && document.querySelector('#${id} .project-link-controls [role="status"]').textContent === 'Project link copied to clipboard.'`));
+  }
+  await evaluate(`Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async () => {throw Error('Denied');}}}); document.querySelector('#project-three .project-link-button').click()`);
+  await delay(100);
+  assert.ok(await evaluate(`(() => {
+    const field = document.querySelector('#project-three-link'); field.focus();
+    return field.getClientRects().length > 0 && field.readOnly && field.value.endsWith('/?share=1#project-three') && field.selectionEnd === field.value.length && document.querySelector('#project-three .project-link-controls [role="status"]').textContent.startsWith('Could not copy');
+  })()`), 'Clipboard failure must expose a selectable, accurate fallback URL');
+  await evaluate(`if (window.linkClipboard) Object.defineProperty(navigator,'clipboard',window.linkClipboard); else delete navigator.clipboard; location.hash = 'about';`);
+  await delay(300);
+  assert.ok(await evaluate('document.querySelector("#main-nav a[aria-current]").hash === "#about"'), 'Section navigation must still work');
+  report.projectLinks = 'PASS: initial deep link, hash changes, Back/Forward, sticky-header offset, section navigation, both motion preferences, all copied URLs and clipboard fallback.';
   await send('Emulation.setScriptExecutionDisabled', { value: true });
   await send('Page.reload');
   await delay(500);
