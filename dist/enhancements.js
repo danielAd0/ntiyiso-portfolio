@@ -88,7 +88,7 @@ function activatePreview(image) {
   image.before(figure);
   figure.append(image);
   const caption = document.createElement('figcaption');
-  caption.textContent = image.closest('.project-gallery') ? ['Home / Club introduction', 'Squad / Meet the team', 'Newsletter / News & publications'][[...image.closest('.project-gallery').querySelectorAll('img:not([data-gallery-thumbnail])')].indexOf(image)] : image.alt;
+  caption.textContent = image.alt;
   figure.append(caption);
   const button = document.createElement('button');
   button.type = 'button';
@@ -129,7 +129,6 @@ function observePreview(image) {
 // A steady featured frame with small, labelled page selectors.
 document.querySelectorAll('.project-gallery').forEach((gallery, galleryIndex) => {
   const images = [...gallery.querySelectorAll('img')];
-  const labels = ['Home', 'Squad', 'Newsletter'];
   const controls = document.createElement('div');
   controls.className = 'gallery-thumbnails';
   controls.setAttribute('role', 'group');
@@ -143,17 +142,18 @@ document.querySelectorAll('.project-gallery').forEach((gallery, galleryIndex) =>
     queueProgress();
   }
   images.forEach((image, index) => {
+    const imageLabel = image.dataset.galleryLabel || image.alt;
     image.loading = 'eager';
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'gallery-thumbnail focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-safe:transition-colors motion-safe:duration-200 motion-safe:active:scale-[.98]';
     button.setAttribute('aria-controls', gallery.id);
-    button.setAttribute('aria-label', 'Show ' + labels[index] + ' screenshot');
+    button.setAttribute('aria-label', 'Show ' + imageLabel + ' screenshot');
     const thumbnail = image.cloneNode();
     thumbnail.alt = '';
     thumbnail.setAttribute('data-gallery-thumbnail', '');
     const label = document.createElement('span');
-    label.textContent = labels[index];
+    label.textContent = imageLabel;
     button.append(thumbnail, label);
     controls.append(button);
     button.addEventListener('click', () => choose(index));
@@ -169,7 +169,7 @@ if ('MutationObserver' in window) {
     records.forEach(record => record.addedNodes.forEach(node => {
       if (node.nodeType !== Node.ELEMENT_NODE) return;
       if (node.matches('img') && node.closest('.project-content')) observePreview(node);
-      node.querySelectorAll('.project-content img, img').forEach(image => {
+      node.querySelectorAll('img').forEach(image => {
         if (image.closest('.project-content')) observePreview(image);
       });
     }));

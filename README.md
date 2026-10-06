@@ -38,6 +38,7 @@ These commands only build and check local files; they do not publish. `src/tailw
 - `dist/styles.css`: responsive layout, typography, focus styles and reduced-motion support.
 - `dist/app.js`: mobile navigation, section highlighting, scroll reveals and the message composer.
 - `dist/enhancements.js`: one-time decorations, remembered evening theme, scroll progress and real-image preview dialogs.
+- `dist/motion.css` and `dist/motion.js`: themed pen cursor, pointer halo, hero ornaments and project hover accents.
 - `server.mjs`: dependency-free Node.js server for local use.
 - `scripts/check.mjs`: structural, interaction and HTTP checks.
 
@@ -45,11 +46,11 @@ These commands only build and check local files; they do not publish. `src/tailw
 
 Experience lists IT / Software Developer at Mafori Group, September 2026 – Present, and a Diploma in Computer Science in progress. September 2026 is the assumed start year; no institution, completion date, job duties or performance claims have been invented.
 
-Projects remain three clearly labelled placeholders. They use native details/summary controls, which also work without JavaScript.
+Education and employment details appear in Experience; Core skills is the single list of technical and analytical skills. About focuses on personal interests.
 
 The contact composer prepares a copyable or downloadable draft. It does not send email, submit messages or store visitor details. Its submit button stays disabled until the local event handlers load.
 
-Mobile navigation stays visible without JavaScript. Animations are finite and disabled when reduced motion is requested; content is never hidden while waiting for a scroll observer.
+Mobile navigation stays visible without JavaScript. Motion respects reduced-motion preferences; content is never hidden while waiting for a scroll observer.
 
 ## Hosting and validation
 
@@ -63,11 +64,11 @@ Sites hosts the static `dist` directory privately. Node.js supplies the local de
 
 Cream is the default theme. The accessible moon/sun theme toggle remembers an explicit selection when local storage is available and works without storage. The About marker fills once, and Contact has a shallow curved edge with a short heading sweep. Reduced motion displays their final states immediately. The existing footer link includes a scroll progress ring.
 
-Projects remain Coming soon. Three supplied Mafori FC screenshots are bundled with the first project. A wide browser-style preview and side rail of Home, Squad and Newsletter thumbnails keep the gallery compact; the rail moves below on mobile; without JavaScript all screenshots remain visible. When a genuine screenshot is ready, add an image inside its existing `.project-content`, with descriptive `alt` text and intrinsic `width` and `height` to reserve space. Use an actual local asset path; `loading="lazy"` is optional. Successfully loaded images receive the photograph styling and an Open larger preview button automatically, including images inserted later. The native modal dialog contains keyboard focus, closes with Escape or its Close preview button, and returns focus to the opener.
+Three supplied Mafori FC screenshots are bundled with the first project. A wide browser-style preview and side rail of thumbnails keep the gallery compact; the rail moves below on mobile. Each image defines its selector name with `data-gallery-label` and its caption with descriptive `alt` text, keeping gallery content in the HTML. Without JavaScript all screenshots remain visible. Add new screenshots inside `.project-content` with intrinsic `width` and `height` to reserve space and actual local asset paths. Successfully loaded images receive an enlargement button automatically. The native modal dialog contains keyboard focus, closes with Escape or its Close preview button, and returns focus to the opener.
 
 ## Layout polish
 
-Project disclosures have stable direct links: `#mafori-fc`, `#project-two`, and `#project-three`. Opening a link expands that project and aligns its summary below the sticky header, including initial loads and browser Back/Forward. Each expanded project has a Copy project link control that preserves the current page path and query string; clipboard failure reveals a selectable read-only URL. All unfinished projects remain Coming soon.
+Projects use native details/summary controls and retain their individual Coming soon statuses. Their direct links are `#mafori-fc`, `#project-two`, and `#project-three`. Opening a link expands that project and aligns its summary below the sticky header, including initial loads and browser Back/Forward. Each expanded project has a Copy project link control that preserves the current page path and query string; clipboard failure reveals a selectable read-only URL.
 
 
 The theme icon sits on the right; regular navigation remains available. Social links use icons with accessible names. The original burgundy footer keeps the name, copyright year and existing scroll-progress control. Header height updates the anchor offset so section headings remain visible. Gallery captions and enlargement controls flow normally at large text sizes.
