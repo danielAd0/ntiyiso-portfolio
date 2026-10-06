@@ -9,5 +9,11 @@
     "check": "node --check dist/app.js && node --check dist/enhancements.js && node --check server.mjs && node scripts/check.mjs",
     "check:browser": "node scripts/browser-audit.mjs"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
 }
