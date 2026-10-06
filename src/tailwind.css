@@ -3,4 +3,25 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-@source "../dist";
+/* Explicit sources avoid scanning the generated CSS. Preflight stays omitted. */
+@source "../dist/index.html";
+@source "../dist/app.js";
+@source "../dist/enhancements.js";
+
+@theme inline {
+  --color-page: var(--page-bg);
+  --color-ink: var(--ink);
+  --color-accent: var(--wine);
+  --color-muted: var(--muted);
+  --color-divider: var(--line);
+  --color-soft: var(--pale);
+  --color-contact: var(--contact-bg);
+  --color-cream: var(--cream);
+  --color-burgundy: var(--burgundy);
+  --color-contact-muted: var(--contact-muted);
+  --color-contact-accent: var(--contact-accent);
+  --color-field: var(--field-line);
+  --font-sans: var(--sans);
+  --font-serif: var(--serif);
+  --font-mono: var(--mono);
+}

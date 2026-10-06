@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Ntiyiso's portfolio in separate HTML, CSS and JavaScript, with a dependency-free Node.js server.",
   "scripts": {
+    "css:watch": "tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --watch",
+    "css:build": "tailwindcss -i ./src/tailwind.css -o ./dist/tailwind.css --minify",
     "start": "node server.mjs",
     "check": "node --check dist/app.js && node --check dist/enhancements.js && node --check server.mjs && node scripts/check.mjs",
     "check:browser": "node scripts/browser-audit.mjs"

@@ -5,6 +5,13 @@ import { server } from '../server.mjs';
 
 const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
+const utilities = await readFile(new URL('../dist/tailwind.css', import.meta.url), 'utf8');
+const tailwindInput = await readFile(new URL('../src/tailwind.css', import.meta.url), 'utf8');
+assert.ok(html.includes('href="/tailwind.css"'), 'Generated utilities must be linked');
+assert.ok(!tailwindInput.includes('@import "tailwindcss";') && !tailwindInput.includes('preflight.css'), 'Preflight must remain disabled');
+for (const file of ['index.html', 'app.js', 'enhancements.js']) assert.ok(tailwindInput.includes(`@source "../dist/${file}"`));
+assert.ok(utilities.includes('background-color:var(--page-bg)') && utilities.includes('color:var(--ink)'), 'Theme utilities must reference the live palette');
+assert.ok(utilities.includes('prefers-reduced-motion:no-preference'), 'Motion utilities must respect reduced motion');
 const app = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 assert.equal(new Set(ids).size, ids.length, 'HTML IDs must be unique');
@@ -15,7 +22,7 @@ for (const match of html.matchAll(/(?:for|aria-controls|aria-labelledby)="([^"]+
 }
 assert.ok(!/hobby-football|football-turn/.test(html + css));
 assert.equal([...html.matchAll(/mafori_screenshot[123][.]png/g)].length, 3);
-assert.equal([...html.matchAll(/<details class="project-card"/g)].length, 3);
+assert.equal([...html.matchAll(/<details class="project-card\b/g)].length, 3);
 assert.ok(html.includes('Mafori Group') && html.includes('IT / Software Developer'));
 assert.ok(html.includes('datetime="2026-09"') && html.includes('Diploma in Computer Science'));
 assert.ok(!/Budget Tracker|Inventory System|Task Manager|Dan Adoration/.test(html));
@@ -155,7 +162,7 @@ assert.equal(mockBrowser({ observers: false }).observerList.length, 0);
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 try {
   const base = `http://127.0.0.1:${server.address().port}`;
-  for (const [path, type] of [['/', 'text/html'], ['/styles.css', 'text/css'], ['/app.js', 'text/javascript']]) {
+  for (const [path, type] of [['/', 'text/html'], ['/styles.css', 'text/css'], ['/tailwind.css', 'text/css'], ['/app.js', 'text/javascript']]) {
     const result = await fetch(base + path);
     assert.equal(result.status, 200, `${path} must load`);
     assert.ok(result.headers.get('content-type').includes(type));

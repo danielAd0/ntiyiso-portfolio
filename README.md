@@ -4,7 +4,7 @@ A cream-white and burgundy portfolio built with separate HTML, CSS and JavaScrip
 
 ## Run locally
 
-Requires Node.js 22 or later. No package installation is required.
+Requires Node.js 22 or later. Install the pinned development dependencies with `npm.cmd ci`.
 
 ```sh
 npm start
@@ -12,6 +12,25 @@ npm run check
 ```
 
 On Windows PowerShell, use `npm.cmd start` and `npm.cmd run check`. Open http://localhost:3000.
+
+Tailwind v4 development uses two PowerShell terminals:
+
+```powershell
+# Terminal 1: rebuild utilities as HTML, JavaScript or the input CSS changes
+npm.cmd run css:watch
+# Terminal 2: serve the dist folder
+npm.cmd start
+```
+
+Before a production handoff, generate the minified stylesheet and validate it:
+
+```powershell
+npm.cmd run css:build
+npm.cmd run check
+npm.cmd run check:browser
+```
+
+These commands only build and check local files; they do not publish. `src/tailwind.css` explicitly scans `dist/index.html`, `dist/app.js` and `dist/enhancements.js`. Keep utility names complete in JavaScript class strings so the CLI can detect them. The generated `dist/tailwind.css` is served at `/tailwind.css`; do not edit it directly. Preflight is omitted. Semantic colours use `@theme inline` to follow the existing cream/evening variables. Custom CSS lives in the components layer, below utilities, retaining the original fonts, decorative underlines, curved edge and animations. Mobile menu CSS remains at 900px, paired with JavaScript's 901px desktop media query.
 
 ## Files
 

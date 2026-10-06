@@ -92,7 +92,7 @@ function activatePreview(image) {
   figure.append(caption);
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'button button-secondary';
+  button.className = 'button button-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent enabled:hover:bg-soft motion-safe:transition-colors motion-safe:duration-200 disabled:opacity-50 disabled:cursor-default motion-safe:enabled:active:scale-[.98]';
   button.textContent = 'Open larger preview';
   button.setAttribute('aria-haspopup', 'dialog');
   button.setAttribute('aria-controls', dialog.id);
@@ -146,7 +146,7 @@ document.querySelectorAll('.project-gallery').forEach((gallery, galleryIndex) =>
     image.loading = 'eager';
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'gallery-thumbnail';
+    button.className = 'gallery-thumbnail focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent motion-safe:transition-colors motion-safe:duration-200 motion-safe:active:scale-[.98]';
     button.setAttribute('aria-controls', gallery.id);
     button.setAttribute('aria-label', 'Show ' + labels[index] + ' screenshot');
     const thumbnail = image.cloneNode();
